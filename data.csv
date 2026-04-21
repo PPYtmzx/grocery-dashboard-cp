@@ -1,0 +1,6 @@
+Platform,Business_Model,Delivery_Time_mins,Free_Delivery_Threshold,Estimated_AOV,SKU_Count,Private_Label_Pct,Market_Share_Pct,Price_Index,User_Rating
+Freshippo,O2O Premium,30,49,120,8000,35,25,110,4.8
+Dingdong,Front-end Warehouse,29,39,70,2500,15,20,105,4.5
+Metro,Membership Wholesale,120,199,450,15000,20,15,85,4.6
+Aldi,Neighborhood Discount,45,39,90,1500,70,10,80,4.2
+Others,Various,60,50,100,3000,10,30,100,4.0
