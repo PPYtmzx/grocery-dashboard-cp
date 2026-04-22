@@ -9,15 +9,17 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="商业分析仪表板 / BI Dashboard", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
 
 # ==========================================
-# 1. 响应式深色模式 CSS / Dark-Mode Aware CSS
+# 1. 响应式深色模式 CSS (保留原生 UI)
 # ==========================================
 st.markdown("""
 <style>
-    /* 默认浅色模式设置 / Default Light Mode */
+    /* 侧边栏样式 / Sidebar Styling */
     [data-testid="stSidebar"] { 
         background-color: #FAFAFA; 
         border-right: 1px solid #E5E7EB; 
     }
+    
+    /* 数据卡片样式 / Metric Card Styling */
     div[data-testid="metric-container"] {
         background-color: #FFFFFF;
         border: 1px solid #F3F4F6;
@@ -28,21 +30,18 @@ st.markdown("""
         transition: all 0.3s ease;
     }
 
-    /* 系统深色模式自动适配 / System Dark Mode Auto-Adaptation */
+    /* 深色模式适配 / Dark Mode Adaptation */
     @media (prefers-color-scheme: dark) {
-        /* 侧边栏改为深蓝黑，增加边界感 / Sidebar to Dark Navy */
         [data-testid="stSidebar"] {
             background-color: #111827 !important;
             border-right: 1px solid #374151 !important;
         }
-        /* 数据卡片改为深色背景，调整顶部强调色为亮蓝 / Metric Card to Dark Slate */
         div[data-testid="metric-container"] {
             background-color: #1F2937 !important;
             border: 1px solid #374151 !important;
             border-top: 4px solid #3B82F6 !important;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
         }
-        /* 强制确保卡片内文字为浅色，防止融合 / Ensure text visibility */
         div[data-testid="metric-container"] label, 
         div[data-testid="metric-container"] [data-testid="stMetricValue"],
         div[data-testid="metric-container"] [data-testid="stMetricDelta"] {
@@ -50,14 +49,10 @@ st.markdown("""
         }
     }
 
-    /* 悬浮动效 / Hover Effect */
     div[data-testid="metric-container"]:hover {
         transform: translateY(-4px);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
-    
-    /* 隐藏默认菜单 / Hide Default UI Elements */
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;} header {visibility: hidden;}
     
     html, body, [class*="css"] { 
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
@@ -66,7 +61,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. 数据读取与配色配置 / Data & Palette
+# 2. 数据读取与配色 / Data & Palette
 # ==========================================
 @st.cache_data
 def load_data():
@@ -78,7 +73,6 @@ except FileNotFoundError:
     st.error("⚠️ 未检测到数据源 (Missing Data Source): data.csv")
     st.stop()
 
-# 商务配色板 / Corporate Palette
 corp_colors = ['#1E3A8A', '#059669', '#D97706', '#DC2626', '#9CA3AF']
 
 def apply_corporate_theme(fig):
@@ -96,7 +90,7 @@ def apply_corporate_theme(fig):
 # 3. 侧边栏导航 / Sidebar Navigation
 # ==========================================
 with st.sidebar:
-    st.markdown("### 📊 战略分析面板 \n **Strategic Analytics**")
+    st.markdown("### 📊 战略分析面板 / Strategic Analytics")
     st.markdown("---")
     page = st.radio(
         "分析模块索引 / Index：",
@@ -114,7 +108,7 @@ with st.sidebar:
 # ==========================================
 if page == "1. 宏观概览 (Executive Overview)":
     st.title("宏观市场概览 / Executive Overview 🌐")
-    st.markdown("四大核心生鲜电商平台的关键商业指标基准测试。 / KPI benchmarking across four major fresh grocery e-commerce platforms.")
+    st.markdown("四大核心生鲜电商平台的关键商业指标基准测试。 / KPI benchmarking across major fresh grocery e-commerce platforms.")
     st.markdown("<br>", unsafe_allow_html=True)
     
     display_df = df[df['Platform'] != 'Others'].reset_index(drop=True)
@@ -125,7 +119,7 @@ if page == "1. 宏观概览 (Executive Overview)":
             with cols[i]:
                 st.metric(label=f"🏢 {row['Platform']}", 
                           value=f"{row['Market_Share_Pct']}%", 
-                          delta=f"NPS 评分 / Rating: {row['User_Rating']}",
+                          delta=f"综合评分 / Rating: {row['User_Rating']}",
                           delta_color="normal")
     
     st.markdown("<br>", unsafe_allow_html=True)
@@ -134,7 +128,7 @@ if page == "1. 宏观概览 (Executive Overview)":
         st.markdown("""
         * **数据来源 (Data Sourcing):** 本仪表板采用行业替代数据 (Proxy Data)，基于各平台公开商业模式建立基准。 / This dashboard utilizes Industry Proxy Data, establishing benchmarks based on the public business models of each platform.
         * **指标定义 (Metric Definitions):** * `Estimated_AOV`: 预估单笔订单的平均交易金额 / Estimated Average Order Value.
-            * `Price_Index`: 平台商品价格相对于市场平均水平的加权指数 (基准值 = 100) / Weighted index of platform commodity prices relative to the market average (Baseline = 100).
+            * `Price_Index`: 平台商品价格相对于市场平均水平的加权指数 (基准值 = 100) / Weighted index of platform prices relative to the market average (Baseline = 100).
         """)
         
     st.subheader("底层数据明细 / Raw Dataset")
@@ -145,7 +139,7 @@ if page == "1. 宏观概览 (Executive Overview)":
 # ==========================================
 elif page == "2. 履约模型 (Fulfillment Model)":
     st.title("履约时效 vs. 成本结构 / Fulfillment vs. Cost 🚚")
-    st.markdown("物理世界的商业权衡：分析末端配送速度对平台盈利模型（客单价/免邮门槛）的倒逼效应。 / Physical world trade-offs: Analyzing the reverse effect of last-mile delivery speed on platform profitability models.")
+    st.markdown("物理世界的商业权衡：分析末端配送速度对平台盈利模型的影响。 / Physical world trade-offs: Analyzing the effect of last-mile delivery speed on platform profitability models.")
     
     y_axis_choice = st.selectbox("🎯 评估维度 / Evaluation Metric:", ["Estimated_AOV", "Free_Delivery_Threshold"])
     
@@ -170,7 +164,7 @@ elif page == "2. 履约模型 (Fulfillment Model)":
 # ==========================================
 elif page == "3. 战略定位 (Strategic Group Map)":
     st.title("市场战略群体图 / Strategic Group Map 🎯")
-    st.markdown("多维生态位映射：基于 SKU 覆盖广度与溢价能力的市场聚类分析。 / Multi-dimensional niche mapping: Market clustering analysis based on SKU coverage and pricing capability.")
+    st.markdown("多维生态位映射：基于 SKU 覆盖广度与溢价能力的聚类分析。 / Multi-dimensional niche mapping: Clustering analysis based on SKU coverage and pricing capability.")
     
     plot_df = df[df['Platform'] != 'Others']
     
@@ -192,58 +186,65 @@ elif page == "3. 战略定位 (Strategic Group Map)":
 # ==========================================
 elif page == "4. 动态推演 (Market Simulation)":
     st.title("动态市场份额模拟沙盘 / Market Simulation Engine 🕹️")
-    st.markdown("基于离散效用模型 (Discrete Utility Model) 的假设性情景推演。 / Hypothetical scenario deduction based on the Discrete Utility Model.")
+    st.markdown("基于离散效用模型的假设性情景推演。 / Hypothetical scenario deduction based on the Discrete Utility Model.")
     
-    col1, col2 = st.columns([1.2, 2.8], gap="large")
-    
-    with col1:
-        st.markdown("#### 🎛️ 参数控制台 / Control Panel")
-        st.caption("调整变量以重构竞争状态 / Adjust variables to reconstruct landscape")
-        aldi_sku = st.slider("Aldi: SKU 规模扩张 / SKU Expansion", 1500, 6000, 1500, 500)
-        dingdong_price = st.slider("Dingdong: 价格下探指数 / Price Drop Index", 80, 120, 105, 5)
-        freshippo_time = st.slider("Freshippo: 配送提速(分钟) / Speed-up (mins)", 15, 45, 30, 5)
+    # 启用局部渲染加速
+    @st.fragment
+    def render_simulation_sandbox():
+        col1, col2 = st.columns([1.2, 2.8], gap="large")
         
-        st.markdown("---")
-        st.markdown("#### 🧮 底层算法 / Algorithm")
-        st.caption("市场份额重分配基于以下效用引力公式： / Market share reallocation is based on utility gravity formula:")
-        st.latex(r"U_i = \alpha \left(\frac{SKU_i}{1k}\right) + \beta \left(\frac{100}{Price_i}\right) + \gamma \left(\frac{100}{Time_i}\right)")
-        
-    with col2:
-        sim_df = df.copy()
-        sim_df[['SKU_Count', 'Price_Index', 'Delivery_Time_mins']] = sim_df[['SKU_Count', 'Price_Index', 'Delivery_Time_mins']].astype(float)
-        
-        sim_df.loc[sim_df['Platform'] == 'Aldi', 'SKU_Count'] = aldi_sku
-        sim_df.loc[sim_df['Platform'] == 'Dingdong', 'Price_Index'] = dingdong_price
-        sim_df.loc[sim_df['Platform'] == 'Freshippo', 'Delivery_Time_mins'] = freshippo_time
-        
-        sim_df['Utility'] = (sim_df['SKU_Count']/1000.0)*10.0 + (100.0/sim_df['Price_Index'])*60.0 + (100.0/sim_df['Delivery_Time_mins'])*30.0
-        sim_df['Simulated_Share'] = (sim_df['Utility'] / sim_df['Utility'].sum()) * 100.0
-        
-        fig_pie = px.pie(
-            sim_df, values='Simulated_Share', names='Platform', hole=0.5,
-            color='Platform', color_discrete_sequence=corp_colors,
-            title="沙盘预测：全市场占有率 / Simulated Market Share (%)"
-        )
-        
-        fig_pie.update_traces(
-            textposition='outside', textinfo='percent+label',
-            hovertemplate='<b>%{label}</b><br>Share: %{percent}<extra></extra>',
-            textfont_size=14 
-        )
-        
-        fig_pie.update_layout(
-            height=550, margin=dict(t=60, b=40, l=60, r=60),
-            showlegend=False, 
-            annotations=[dict(text='Market<br>Share', x=0.5, y=0.5, font_size=18, showarrow=False)]
-        )
-        st.plotly_chart(fig_pie, use_container_width=True)
-        
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        
-        main_players = sim_df[sim_df['Platform'] != 'Others']
-        if not main_players.empty:
-            top_platform = main_players.loc[main_players['Simulated_Share'].idxmax(), 'Platform']
-            top_share = main_players['Simulated_Share'].max()
-            others_share = sim_df.loc[sim_df['Platform'] == 'Others', 'Simulated_Share'].values[0]
+        with col1:
+            st.markdown("#### 🎛️ 参数控制台 / Control Panel")
+            st.caption("调整变量以重构竞争状态 / Adjust variables to reconstruct landscape")
+            aldi_sku = st.slider("Aldi: SKU 规模扩张 / SKU Expansion", 1500, 6000, 1500, 10)
+            dingdong_price = st.slider("Dingdong: 价格下探指数 / Price Drop Index", 80, 120, 105, 1)
+            freshippo_time = st.slider("Freshippo: 配送提速(分钟) / Speed-up (mins)", 15, 45, 30, 1)
             
-            st.info(f"📌 **洞察结论 (Strategic Insight):** \n\n当前参数情境下，**{top_platform}** 获取了核心阵营中的最大引力 (预期份额 **{top_share:.1f}%**)。此外，因行业内卷加剧，传统零散市场 (Others) 的生存空间被压缩至 **{others_share:.1f}%**。 \n\n Under current parameters, **{top_platform}** captures maximum gravity (Expected Share: **{top_share:.1f}%**). Fragmentation (Others) is compressed to **{others_share:.1f}%**.")
+            st.markdown("---")
+            st.markdown("#### 🧮 底层算法 / Algorithm")
+            st.caption("市场份额重分配基于效用引力公式： / Market share reallocation is based on utility gravity formula:")
+            st.latex(r"U_i = \alpha \left(\frac{SKU_i}{1k}\right) + \beta \left(\frac{100}{Price_i}\right) + \gamma \left(\frac{100}{Time_i}\right)")
+            
+        with col2:
+            sim_df = df.copy()
+            sim_df[['SKU_Count', 'Price_Index', 'Delivery_Time_mins']] = sim_df[['SKU_Count', 'Price_Index', 'Delivery_Time_mins']].astype(float)
+            
+            sim_df.loc[sim_df['Platform'] == 'Aldi', 'SKU_Count'] = aldi_sku
+            sim_df.loc[sim_df['Platform'] == 'Dingdong', 'Price_Index'] = dingdong_price
+            sim_df.loc[sim_df['Platform'] == 'Freshippo', 'Delivery_Time_mins'] = freshippo_time
+            
+            sim_df['Utility'] = (sim_df['SKU_Count']/1000.0)*10.0 + (100.0/sim_df['Price_Index'])*60.0 + (100.0/sim_df['Delivery_Time_mins'])*30.0
+            sim_df['Simulated_Share'] = (sim_df['Utility'] / sim_df['Utility'].sum()) * 100.0
+            
+            fig_pie = px.pie(
+                sim_df, values='Simulated_Share', names='Platform', hole=0.5,
+                color='Platform', color_discrete_sequence=corp_colors,
+                title="沙盘预测：全市场占有率 / Simulated Market Share (%)"
+            )
+            
+            fig_pie.update_traces(
+                textposition='outside', textinfo='percent+label',
+                hovertemplate='<b>%{label}</b><br>Share: %{percent}<extra></extra>',
+                textfont_size=14,
+                sort=False  # 核心修复：关闭自动排序，死死固定扇区物理位置
+            )
+            
+            fig_pie.update_layout(
+                height=650, margin=dict(t=80, b=40, l=80, r=80),
+                showlegend=False, 
+                annotations=[dict(text='Market<br>Share', x=0.5, y=0.5, font_size=20, showarrow=False)]
+            )
+            st.plotly_chart(fig_pie, use_container_width=True)
+            
+            st.markdown("<br><br><br><br>", unsafe_allow_html=True)
+            
+            main_players = sim_df[sim_df['Platform'] != 'Others']
+            if not main_players.empty:
+                top_platform = main_players.loc[main_players['Simulated_Share'].idxmax(), 'Platform']
+                top_share = main_players['Simulated_Share'].max()
+                others_share = sim_df.loc[sim_df['Platform'] == 'Others', 'Simulated_Share'].values[0]
+                
+                st.info(f"📌 **洞察结论 / Strategic Insight:** \n\n当前参数情境下，**{top_platform}** 获取了核心阵营中的最大引力 (预期份额 **{top_share:.1f}%**)。此外，因行业内卷加剧，传统零散市场 (Others) 的生存空间被压缩至 **{others_share:.1f}%**。 \n\n Under current parameters, **{top_platform}** captures maximum gravity (Expected Share: **{top_share:.1f}%**). Fragmentation (Others) is compressed to **{others_share:.1f}%**.")
+
+    # 激活渲染模块
+    render_simulation_sandbox()
